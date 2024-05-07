@@ -1,0 +1,146 @@
+Topics to cover in this 
+
+what is kms ?
+types of kms ?
+create 2 IAM users with s3 full permission
+how to create kms key 
+create S3 bucket 
+configure both users with aws-cli
+verify both users access with s3
+how to enable encryption on s3 bucket 
+verify 
+
+
+what is kms 
+aws key management service (aws kms ) is a managed service - here managed service means kms is managed by aws, not by us like kms key update, policy update, kms backup
+kms key provides the next level of security to our data by providing encryption to data
+kms key helps us to manage our data securely and also reduce the burden of managing user access with IAM policy or s3 bucket policy 
+In simple words, key management services or kms help us to encrypt and decrypt the data 
+
+
+types of kms 
+we have 2 types of kms key provided by aws 
+
+symmetric - a single encryption key used for both encrypt and decrypt the data 
+asymmetric - a public and private key pair that can be used to encrypt/decrypt the data. 
+
+create 2 IAM users with s3 full permission 
+login to aws console 
+go to service and in the search tab look for IAM 
+from the dashboard select user - select programmatic access
+create 2 users and give both s3 full permission 
+make sure to download the access key and secret key and store it in a secure location 
+
+how to create kms key 
+login to aws console - select the region 
+go to service and in the search tab look for kms 
+in kms on the left side 3 options are there -
+aws managed keys
+customer-managed keys 
+customer key store
+select the customer-managed keys
+in this demo will use symmetric key - select symmetric
+in the advance key section select the kms 
+regionality leave default 
+in the next windows 3 options to fill 
+alias - recommended giving some alias name 
+description - recommended giving some description ( optional field ) 
+Tags - recommended giving some tags name ( optional field ) 
+in the next screen select the key administrator - here need to give the user/group/role who administer access to this policy 
+
+The next tab is for key deletion (optional field ) 
+next need to select key permissions - here need to select users for whom kms access require 
+
+verify the key policy 
+
+{
+    "Id": "key-consolepolicy-3",
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Enable IAM User Permissions",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::aws-account-id:username"
+            },
+            "Action": "kms:*",
+            "Resource": "*"
+        },
+        {
+            "Sid": "Allow access for Key Administrators",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam:::user/username"
+            },
+            "Action": [
+                "kms:Create*",
+                "kms:Describe*",
+                "kms:Enable*",
+                "kms:List*",
+                "kms:Put*",
+                "kms:Update*",
+                "kms:Revoke*",
+                "kms:Disable*",
+                "kms:Get*",
+                "kms:Delete*",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+
+
+finish 
+
+
+create s3 bucket 
+
+login to aws console - select the region 
+go to service and in the search tab look for s3
+in the left panel - select s3 bucket - create a bucket 
+give a unique name to your bucket and select the same region in which aws kms key is created 
+leave all the settings as it and click on create a bucket 
+
+
+configure both users with aws-cli
+aws configure --profile user1
+aws configure --profile user2
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=
+
+next step - put some files inside the s3 bucket and verify both user access to it 
+
+aws s3 ls
+
+aws s3 cp s3://enteryourbucketnamehere/filename . --profile user1  
+
+aws s3 cp s3://enteryourbucketnamehere/filename . --profile user2 
+
+
+
+Till this point both users were able to download, list file without error 
+
+
+how to enable encryption on s3 bucket
+
+login to aws console - select the region 
+go to service and in the search tab look for s3
+select the bucket on which you need to enable encryption 
+select properties - scroll down and select default encryption - enable it 
+
+
+verify both users access again 
+
+aws s3 cp s3://enteryourbucketnamehere/filename . --profile user1  
+
+aws s3 cp s3://enteryourbucketnamehere/filename . --profile user2 
+
+
+
+Now here only users with kms key access are able to call the s3 bucket operation 
